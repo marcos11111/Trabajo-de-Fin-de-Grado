@@ -1,0 +1,18 @@
+# Environment secrets
+.env
+
+# Python caching and environments
+__pycache__/
+*.pyc
+venv/
+.venv/
+
+# Simulation Data and Visual Outputs (Local Pipeline)
+mumax_remoto/
+Holistica3_analisis/
+benchmark_analysis/
+*.parquet
+*.ovf
+*.mp4
+*.png
+*.log
