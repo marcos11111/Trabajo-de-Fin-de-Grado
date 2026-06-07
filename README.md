@@ -1,69 +1,71 @@
 # Automated Micromagnetic Domain Segmentation & Multiregion Anisotropy Inference Pipeline
 
-An advanced computational framework designed to orchestrate high-performance micromagnetic simulations in **MuMax3**, perform automated magnetic domain segmentation via unsupervised machine learning, and execute physics-informed multiregion anisotropy inference.
+**Code repository for the Bachelor's Thesis (Trabajo Fin de Grado) in Physics and Mathematics.** *Author: Marcos Cuervo Santos | University of Oviedo*
 
-This pipeline bridges data-driven clustering techniques with physical constraints (such as exchange length and spatial boundary conditions) to recover spatial anisotropy maps and perform automated cross-verification using remote GPU infrastructure.
+## Abstract
 
-## 🚀 System Architecture & Workflow
+This repository contains an advanced computational framework developed to orchestrate high-performance micromagnetic simulations (via MuMax3), perform automated magnetic domain segmentation using unsupervised machine learning, and execute physics-informed multiregion anisotropy inference. 
 
-The pipeline operates in 4 synchronized phases to guarantee mathematical rigor and structural validation:
+The pipeline bridges data-driven clustering techniques with underlying physical constraints—such as exchange length and spatial boundary conditions—to systematically recover spatial anisotropy maps. Furthermore, it includes automated cross-verification routines utilizing remote GPU infrastructure to validate the inferred macroscopic hysteresis behavior against ground-truth simulations.
 
-1. **Phase 1: Remote Simulation Sampling** – Automated batch generation and transmission of script variants (`.mx3`) to a high-performance remote GPU server via parallel SSH/SCP worker threads.
-2. **Phase 2: Temporal & Structural Feature Engineering** – Vector extraction of local physical quantities ($\mathbf{m}_x, \mathbf{m}_y, \mathbf{m}_z$, temporal angular velocity $\partial\theta/\partial t$, and field dynamics) combined with PCA dimensionality reduction.
-3. **Phase 3: Domain Segmentation & Blind Calibration** – Unsupervised partition using K-Means optimized via Silhouette validation scoring to isolate independent magnetic regions without ground-truth dependency.
-4. **Phase 4: Physics-Informed Axis Inference & Cross-Verification** – Analytical execution of a multiregion anisotropy inference engine considering neighbor drag contributions ($\kappa$). The inferred OVF map is automatically re-injected into the remote server for macroscopic hysteresis loop cross-verification.
+## Methodology & Workflow
 
-## 📁 Repository Structure
+The computational pipeline operates through four synchronized phases to ensure mathematical rigor and structural validation:
 
-```text
+1. **Distributed Micromagnetic Simulations:** Automated batch generation and transmission of script variants (.mx3) to a high-performance remote GPU server via parallel SSH/SCP worker threads.
+2. **Feature Extraction & Dimensionality Reduction:** Vector extraction of local physical quantities (e.g., mx, my, mz, temporal angular velocity \partial\phi/\partial t, and field dynamics), followed by Principal Component Analysis (PCA) to isolate relevant variance.
+3. **Unsupervised Domain Segmentation:** Spatial partitioning using K-Means clustering, optimized via Silhouette validation scoring, to isolate independent magnetic regions without prior ground-truth dependency.
+4. **Physics-Informed Inference & Validation:** Analytical execution of a multiregion anisotropy inference engine that accounts for neighbor drag contributions (\kappa). The inferred Object Vector Field (OVF) map is automatically re-injected into the remote server for macroscopic hysteresis loop cross-verification.
+
+## Repository Architecture
+
+The codebase is modularized to separate data handling, machine learning, and physical simulation concerns:
+
 ├── modules/
 │   ├── base.mx3          # MuMax3 base script template (Voronoi/Injected modes)
-│   ├── branches.py       # Multi-branch data management and MumaxProject handlers
+│   ├── branches.py       # Multi-branch data management and project handlers
 │   ├── cluster.py        # ML clustering core & Multiregion Inference Engine
-│   ├── data_core.py      # I/O Parquet engine, numerical derivatives, and BenchmarkAnalyzer
+│   ├── data_core.py      # I/O Parquet engine and numerical derivative computations
 │   ├── simulator.py      # Paramiko/SCP remote multi-threaded GPU executor
-│   └── visualize.py      # Production-grade plotting engine (Polar histograms & Hysteresis)
-├── main.py               # Dynamic entry point (Decoupled environment)
-├── requirements.txt      # Python dependencies
-└── .gitignore            # Security filters for local caches and data arrays
+│   └── visualize.py      # Scientific plotting engine (Polar histograms, Hysteresis, Grids)
+├── main.py               # Main execution script and hyperparameter configuration
+├── requirements.txt      # Python environment dependencies
+└── .gitignore            # Exclusion filters for local caches and binary arrays
 
-🛠️ Installation & Setup
-1. Clone the Repository
-Bash
-git clone [https://github.com/your-username/micromagnetic-segmentation-pipeline.git](https://github.com/your-username/micromagnetic-segmentation-pipeline.git)
-cd micromagnetic-segmentation-pipeline
-2. Install Dependencies
-It is highly recommended to use a virtual environment (venv or conda):
+## Reproducibility & Setup
 
-Bash
+### 1. Environment Preparation
+To ensure reproducibility, clone the repository and instantiate a virtual environment:
+
+git clone https://github.com/marcos11111/Trabajo-de-Fin-de-Grado.git
+cd Trabajo-de-Fin-de-Grado
 python -m venv .venv
 source .venv/bin/activate  # On Windows use: .venv\Scripts\activate
 pip install -r requirements.txt
-3. Configure Infrastructure Secrets (.env)
-To protect remote server credentials and separate local disk paths from the codebase, create a .env file in the root directory of the project:
 
-Ini, TOML
-# Remote GPU Server Access
+### 2. Infrastructure Configuration (.env)
+To protect remote server credentials and decouple local paths from the codebase, create a .env file in the root directory. This file is excluded from version control by default.
+
+# Remote GPU Server Credentials
 REMOTE_HOST=156.35.97.43
 REMOTE_USER=GPU
 REMOTE_PASSWORD=your_secure_password
 
-# Remote Executable Environment
+# Execution Environment Paths
 MUMAX_PATH=F:/SciProg/Mumax/3.10f/mumax3.exe
 REMOTE_BASE_DIR=F:/Users_Data/Your_User/regions/tests_remotos/
-Note: The .env file is explicitly ignored by Git via .gitignore to prevent data and credential leaks.
 
-💻 Usage
-To trigger the complete multi-phase pipeline, configure your search space or material parameters in main.py and run:
+### 3. Execution
+The full analytical pipeline is triggered via the main script. Physical parameters, grid definitions, and ML hyperparameters can be configured within the CONFIG dictionary inside main.py.
 
-Bash
 python main.py
-Analytical Capabilities Included:
-Ablation Studies: Automated extraction of marginal performance gains when adding or removing specific physical dimensions from the clustering feature vector.
 
-Spatial Mismatch Verification: Hungarian matching algorithm alignment between K-Means clusters and Ground Truth zones to generate strict domain wall contour divergence maps.
+## Analytical Capabilities
 
-Macroscopic Validation Plots: High-contrast comparisons mapping the global original hysteresis loops against the newly inferred spatial anisotropy grid loops.
+* **Ablation Studies:** Automated extraction of marginal performance metrics when modifying the physical dimensions included in the clustering feature vector.
+* **Spatial Mismatch Analysis:** Hungarian matching algorithm alignment between unsupervised clusters and ground-truth regions to compute and visualize domain wall divergence.
+* **Macroscopic Validation:** High-contrast, publication-ready visualizations mapping the original global hysteresis loops against the behavior governed by the newly inferred spatial anisotropy grids.
 
-⚖️ License
+## License
+
 This project is licensed under the MIT License - see the LICENSE file for details.
