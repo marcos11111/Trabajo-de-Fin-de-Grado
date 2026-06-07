@@ -14,14 +14,15 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
 CONFIG = {
     "aesthetics": {
         "use_scienceplots": True,
-        "facecolor": "#f3f0df",  # ⚡ NUEVO: Fondo crema unificado
+        "facecolor": "#f3f0df",  # El fondo crema que configuramos antes
         "font.family": "serif", 
         "font.serif": ["Times New Roman", "DejaVu Serif"], 
-        "font.size": 18,         # ⚡ Tamaños de fuente escalados
-        "axes.titlesize": 20, 
-        "axes.labelsize": 18, 
-        "xtick.labelsize": 16, 
+        "font.size": 18,         # Letra global aumentada
+        "axes.titlesize": 20,    # Títulos grandes
+        "axes.labelsize": 18,    # Etiquetas de ejes (H_ext, m_x)
+        "xtick.labelsize": 16,   # Números de los ejes
         "ytick.labelsize": 16,
+        "legend.fontsize": 14,
         "mathtext.fontset": "stix", 
         "figure.dpi": 300, 
         "savefig.format": "pdf"

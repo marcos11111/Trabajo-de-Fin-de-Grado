@@ -46,8 +46,8 @@ class Visualizer:
             plt.close(fig)
             return
             
-        if not filename.endswith('.pdf'):
-            filename = filename.replace('.png', '.pdf')
+        if not filename.endswith('png'):
+            filename = filename.replace('.pdf', '.png')
             
         fig.savefig(self.core.plot_dir / filename, dpi=300, bbox_inches='tight', facecolor=self.facecolor)
         plt.close(fig)
@@ -59,11 +59,11 @@ class Visualizer:
             
         # ⚡ SOLUCIÓN DE SOLAPAMIENTO: Añadimos 'labelpad' para empujar los títulos
         # hacia afuera y evitar que LaTeX pise los números del eje.
-        if xlabel: ax.set_xlabel(xlabel, fontsize=10, weight='bold', labelpad=10)
-        if ylabel: ax.set_ylabel(ylabel, fontsize=10, weight='bold', labelpad=8)
+        if xlabel: ax.set_xlabel(xlabel, fontsize=18, weight='bold', labelpad=10)
+        if ylabel: ax.set_ylabel(ylabel, fontsize=18, weight='bold', labelpad=8)
             
         if not self.use_scienceplots:
-            ax.tick_params(axis='both', which='major', labelsize=8, direction='in', top=True, right=True)
+            ax.tick_params(axis='both', which='major', labelsize=14, direction='in', top=True, right=True)
             ax.tick_params(axis='both', which='minor', direction='in', top=True, right=True)
             ax.grid(True, linestyle='-', alpha=0.15, color='gray', linewidth=0.5)
 
@@ -71,7 +71,7 @@ class Visualizer:
         """Etiquetas universales (a), (b), (c) para maquetación multipanel."""
         x_pos = -0.15 if is_polar else -0.12
         y_pos = 1.15 if is_polar else 1.05
-        ax.text(x_pos, y_pos, f'({letter})', transform=ax.transAxes, fontweight='bold', fontsize=11)
+        ax.text(x_pos, y_pos, f'({letter})', transform=ax.transAxes, fontweight='bold', fontsize=19)
 
     def plot_cluster_anisotropy_polar(self, cluster_anis: dict, inferred_angles: dict = None, filename: str = "cluster_polar.pdf", subtitle: str = "") -> None:
         n_clusters = len(cluster_anis)
@@ -94,7 +94,7 @@ class Visualizer:
         rows = (n_clusters + cols - 1) // cols
         
         # Ampliamos ligeramente la altura del lienzo (figsize) para acomodar las filas holgadamente
-        fig = plt.figure(figsize=((6.5 * cols)/2.54, (7.0 * rows + 2.0)/2.54), facecolor=self.facecolor)
+        fig = plt.figure(figsize=((6.5 * cols)/1.41, (7.0 * rows + 2.0)/1.41), facecolor=self.facecolor)
         
         # ⚡ CRÍTICO: Controlamos el espaciado con GridSpec fijando hspace=0.45 para separar las filas
         gs = fig.add_gridspec(rows, cols, wspace=0.25, hspace=0.45)
@@ -115,7 +115,7 @@ class Visualizer:
             ax.bar((b_edges[:-1] + b_edges[1:]) / 2.0, counts, width=(2 * np.pi)/40, bottom=0.0, color=self.master_cmap(cluster_id % 10), alpha=0.8, edgecolor='black', linewidth=0.5)
             ax.set_ylim(0, max_r)
             ax.set_yticklabels([])
-            ax.tick_params(axis='x', labelsize=7, pad=4)
+            ax.tick_params(axis='x', labelsize=12, pad=4)
             
             self._add_panel_letter(ax, labels_letters[i], is_polar=True)
             
@@ -132,14 +132,14 @@ class Visualizer:
                 panel_txt = rf"$\mathrm{{Región}}\ {cluster_id}$" + "\n" + rf"$\hat \theta = {data['phi_i_deg']:.1f}^\circ\ |\ \tilde \theta = {data['theta_deg']:.1f}^\circ$"
                 
                 # Al no haber tight_layout destructivo, este pad de 15 se respetará de forma estricta
-                ax.set_title(panel_txt, fontsize=8, weight='normal', pad=15)
+                ax.set_title(panel_txt, fontsize=14, weight='normal', pad=15)
             else:
-                ax.set_title(rf"$\mathrm{{Región}}\ {cluster_id}$", fontsize=9, weight='bold', pad=15)
+                ax.set_title(rf"$\mathrm{{Región}}\ {cluster_id}$", fontsize=16, weight='bold', pad=15)
                 
         if legend_lines:
             fig.legend(
                 handles=legend_lines, labels=[r'Inferencia original ($\hat \theta$)', r'Inferencia corregida ($\tilde \theta$)'],
-                loc='lower center', bbox_to_anchor=(0.5, 0.02), ncol=2, fontsize=9,
+                loc='lower center', bbox_to_anchor=(0.5, 0.02), ncol=2, fontsize=16,
                 frameon=True, facecolor=self.facecolor, edgecolor='#cccccc', fancybox=False
             )
             
@@ -148,7 +148,7 @@ class Visualizer:
         self.save_and_show(fig, filename)
 
     def plot_global_anisotropy_histograms(self, gt_angles: np.ndarray, inferred_angles: np.ndarray, filename: str = "global_histograms.pdf", subtitle: str = "") -> None:
-        fig, axes = plt.subplots(1, 2, figsize=(15/2.54, 7/2.54), facecolor=self.facecolor, subplot_kw={'projection': 'polar'})
+        fig, axes = plt.subplots(1, 2, figsize=(15/1.41, 7/1.41), facecolor=self.facecolor, subplot_kw={'projection': 'polar'})
         bins = np.linspace(0, 2 * np.pi, 41)
 
         def get_sym_counts(angles):
@@ -169,10 +169,10 @@ class Visualizer:
             ax.bar((b_edges[:-1] + b_edges[1:]) / 2.0, data_counts[idx], width=(2 * np.pi)/40, bottom=0.0, color=colors[idx], alpha=0.8, edgecolor='black', linewidth=0.5)
             ax.set_ylim(0, max_r)
             ax.set_yticklabels([])
-            ax.tick_params(axis='x', labelsize=8, pad=2)
+            ax.tick_params(axis='x', labelsize=14, pad=2)
             
             self._add_panel_letter(ax, ['a', 'b'][idx], is_polar=True)
-            ax.set_title(titles[idx], fontsize=9, weight='bold', pad=12)
+            ax.set_title(titles[idx], fontsize=16, weight='bold', pad=12)
             
         fig.tight_layout()
         self.save_and_show(fig, filename)
@@ -184,7 +184,7 @@ class Visualizer:
         df = pd.read_csv(file_path, sep='\t').rename(columns=lambda x: x.strip().replace('# ', ''))
         b_ext, m_global = df['B_extx (T)'].values, df['mx ()'].values
         
-        fig, ax = plt.subplots(figsize=(8.5/2.54, 6.5/2.54), facecolor=self.facecolor)
+        fig, ax = plt.subplots(figsize=(8.5/1.41, 6.5/1.41), facecolor=self.facecolor)
         self.apply_paper_style(ax, xlabel=r"Campo Externo $\mathbf{H}^\text{ext}$ (T)", ylabel=r"Imanación $m_x$")
         
         common_len_g = min(len(b_ext), len(m_global))
@@ -203,7 +203,7 @@ class Visualizer:
                     linewidth=1.5, marker=markers[idx % len(markers)], markersize=4, 
                     markevery=max(1, len(current_b) // 20), alpha=0.9, zorder=2)
             
-        ax.legend(frameon=False, fontsize=8, loc='best', ncol=2)
+        ax.legend(frameon=False, fontsize=14, loc='best', ncol=2)
         self.save_and_show(fig, filename)
 
     def plot_global_verification_hysteresis(self, table_path: Path, verification_table_path: Path, filename: str = "hysteresis_global_compare.pdf", subtitle: str = "") -> None:
@@ -215,7 +215,7 @@ class Visualizer:
         v_df = pd.read_csv(verification_table_path, sep='\t').rename(columns=lambda x: x.strip().replace('# ', ''))
         v_b, v_m = v_df['B_extx (T)'].values, v_df['mx ()'].values
         
-        fig = plt.figure(figsize=(8.5/2.54, 8/2.54), facecolor=self.facecolor)
+        fig = plt.figure(figsize=(8.5/1.41, 8/1.41), facecolor=self.facecolor)
         
         # ⚡ SOLUCIÓN DE MARGEN: Incrementamos hspace de 0.1 a 0.18 para distanciar los dos paneles verticales
         gs = gridspec.GridSpec(2, 1, height_ratios=[3, 1], hspace=0.18)
@@ -230,7 +230,7 @@ class Visualizer:
         ax_main.plot(v_b[-common_len_v:], v_m[-common_len_v:], color='#d62728', linestyle='--', marker='s', markersize=3.0, linewidth=1.2, label='Inferencia', zorder=2)
         
         self.apply_paper_style(ax_main, ylabel=r"Imanación $m_x$")
-        ax_main.legend(frameon=False, fontsize=8, loc='upper left')
+        ax_main.legend(frameon=False, fontsize=14, loc='upper left')
         ax_main.tick_params(labelbottom=False)
         
         idx_o, idx_v = np.argsort(b_ext[-common_len_o:]), np.argsort(v_b[-common_len_v:])
@@ -249,7 +249,7 @@ class Visualizer:
         
         self.apply_paper_style(ax_res, xlabel=r"Campo Externo $\mathbf{H}^\text{ext}$ (T)", ylabel=r"$\Delta m_x$")
         
-        ax_res.text(0.97, 0.05, f"NRMSE: {nrmse:.1e}", transform=ax_res.transAxes, ha='right', va='bottom', fontsize=8, family='monospace', bbox=dict(facecolor=self.facecolor, edgecolor='none', alpha=0.8, pad=0))
+        ax_res.text(0.97, 0.05, f"NRMSE: {nrmse:.1e}", transform=ax_res.transAxes, ha='right', va='bottom', fontsize=14, family='monospace', bbox=dict(facecolor=self.facecolor, edgecolor='none', alpha=0.8, pad=0))
         
         max_res = np.max(np.abs(residual)) * 1.5 if np.max(np.abs(residual)) > 0 else 0.01
         ax_res.set_ylim(-max_res, max_res)
@@ -281,7 +281,7 @@ class Visualizer:
             cmap, vmin, vmax, label = 'magma', 0.0, max(1.0, max_abs), f'Magnitud ({quantity})'
         
         # ⚡ AUMENTADO: Lienzo mucho más grande para el renderizado del vídeo MP4
-        fig, ax = plt.subplots(figsize=(12/2.54, 10/2.54), facecolor=self.facecolor)
+        fig, ax = plt.subplots(figsize=(12/1.41, 10/1.41), facecolor=self.facecolor)
         ax.set_facecolor(self.facecolor)
         
         extent = [df['x (m)'].min(), df['x (m)'].max(), df['y (m)'].min(), df['y (m)'].max()]
@@ -292,7 +292,7 @@ class Visualizer:
             cbar.set_ticks([-np.pi, -np.pi/2, 0, np.pi/2, np.pi])
             cbar.ax.set_yticklabels([r'$-\pi$', r'$-\pi/2$', r'$0$', r'$\pi/2$', r'$\pi$'])
             
-        cbar.set_label(label, fontsize=9, weight='bold')
+        cbar.set_label(label, fontsize=16, weight='bold')
         ax.axis('off') 
 
         def update(frame_idx):
@@ -316,7 +316,7 @@ class Visualizer:
         df = pd.read_csv(table_path, sep='\t').rename(columns=lambda x: x.strip().replace('# ', ''))
         b_ext, m_global = df['B_extx (T)'].values, df['mx ()'].values
         
-        fig, ax = plt.subplots(figsize=(8.5/2.54, 6.5/2.54), facecolor=self.facecolor)
+        fig, ax = plt.subplots(figsize=(8.5/1.41, 6.5/1.41), facecolor=self.facecolor)
         self.apply_paper_style(ax, xlabel=r"Campo Externo $\mathbf{H}^\text{ext}$ (T)", ylabel=r"Imanación $m_x$")
         
         # ⚡ MARCADORES: Representación realista de datos discretos conectados
@@ -340,7 +340,7 @@ class Visualizer:
         n_rows = len(dfs)
         n_cols = num_frames
         
-        fig, axes = plt.subplots(n_rows, n_cols, figsize=(17.5/2.54, (4.5 * n_rows + 1.5)/2.54), facecolor=self.facecolor)
+        fig, axes = plt.subplots(n_rows, n_cols, figsize=(17.5/1.41, (4.5 * n_rows + 1.5)/1.41), facecolor=self.facecolor)
         if n_rows == 1: axes = [axes]
         
         extent = [first_df['x (m)'].min(), first_df['x (m)'].max(), first_df['y (m)'].min(), first_df['y (m)'].max()]
@@ -385,10 +385,10 @@ class Visualizer:
                         title_str = rf"$\mathbf{{H}}^\text{{ext}} = {0.5}\ \mathrm{{T}}$"
 
                     ax.text(0.5, 1.06, title_str, transform=ax.transAxes,
-                            fontsize=10, weight='bold', ha='center', va='bottom')
+                            fontsize=26, weight='bold', ha='center', va='bottom')
                 
                 if col_idx == 0:
-                    ax.text(-0.25, 0.5, row_name, transform=ax.transAxes, rotation=90, va='center', ha='center', weight='bold', fontsize=10)
+                    ax.text(-0.25, 0.5, row_name, transform=ax.transAxes, rotation=90, va='center', ha='center', weight='bold', fontsize=26)
                 
                 ax.set_aspect('equal')
                 ax.axis('off')
@@ -399,8 +399,8 @@ class Visualizer:
         cbar = fig.colorbar(im, cax=cbar_ax, orientation='horizontal')
         cbar.set_ticks([-np.pi, -np.pi/2, 0, np.pi/2, np.pi])
         cbar.ax.set_xticklabels([r'$-\pi$', r'$-\pi/2$', r'$0$', r'$\pi/2$', r'$\pi$'])
-        cbar.ax.tick_params(labelsize=8)
-        cbar.set_label(r'Ángulo de imanación ($\phi$)', weight='bold', fontsize=9)
+        cbar.ax.tick_params(labelsize=20)
+        cbar.set_label(r'Ángulo de imanación ($\phi$)', weight='bold', fontsize=22)
         
         self.save_and_show(fig, filename)
 
@@ -416,7 +416,7 @@ class Visualizer:
         b_val = b_ext[zero_idx]
         
         # Preparamos un lienzo de doble columna cuadrada
-        fig, axes = plt.subplots(2, 2, figsize=(16/2.54, 15/2.54), facecolor=self.facecolor)
+        fig, axes = plt.subplots(2, 2, figsize=(16/1.41, 15/1.41), facecolor=self.facecolor)
         axes = axes.flatten()
         
         labels_letters = list(string.ascii_lowercase)
@@ -478,14 +478,14 @@ class Visualizer:
             else:
                 title_str = rf"$\mathrm{{{name}}}$"
                 
-            ax.text(0.5, 1.05, title_str, transform=ax.transAxes, fontsize=10, weight='bold', ha='center', va='bottom')
+            ax.text(0.5, 1.05, title_str, transform=ax.transAxes, fontsize=28, weight='bold', ha='center', va='bottom')
             
             ax.set_aspect('equal')
             ax.axis('off')
             
-            # Barra de color individual ajustada a la altura del disco
+            # ⚡ CAMBIO: Números de la barra de color a 20
             cbar = fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
-            cbar.ax.tick_params(labelsize=7)
+            cbar.ax.tick_params(labelsize=20)
             if cbar_ticks is not None:
                 cbar.set_ticks(cbar_ticks)
                 cbar.ax.set_yticklabels(cbar_labels)
@@ -494,7 +494,8 @@ class Visualizer:
         for idx in range(len(dfs), 4):
             axes[idx].axis('off')
             
-        fig.suptitle(rf"$\mathrm{{Parametros\ de\ agrupamiento\ en\ }}\mathbf{{H}}^\text{{ext}} = {b_val:.2f}\ \mathrm{{T}}$", fontsize=11, weight='bold', y=0.98)
+        fig.suptitle(rf"$\mathrm{{Parametros\ de\ agrupamiento\ en\ }}\mathbf{{H}}^\text{{ext}} = {b_val:.2f}\ \mathrm{{T}}$", fontsize=30, weight='bold', y=1.02)
         fig.tight_layout()
         fig.subplots_adjust(top=0.90, wspace=0.3, hspace=0.3)
         self.save_and_show(fig, filename)
+    

@@ -174,7 +174,7 @@ class Clusterer:
         n_cols = len(vis_maps) + (1 if has_gt and self.ground_truth_clusters is not None else 0)
 
         # Dimensiones fijas para evitar el auto-scaling destructivo de Matplotlib
-        fig = plt.figure(figsize=((6.5 * n_cols)/2.54, 6.5/2.54), facecolor=self.vis.facecolor)
+        fig = plt.figure(figsize=((6.5 * n_cols)/1.41, 6.5/1.41), facecolor=self.vis.facecolor)
         
         # Estructuramos la rejilla de subplots de forma explícita
         gs = fig.add_gridspec(1, n_cols, wspace=0.15, hspace=0.0)
@@ -218,7 +218,7 @@ class Clusterer:
             
             # ⚡ FIJADO MATEMÁTICO: Anclamos el texto en el centro real de coordenadas del disco (0.5, 1.05)
             ax.text(0.5, 1.05, r"$\mathrm{Comparación}$", transform=ax.transAxes, 
-                    fontsize=10, weight='bold', ha='center', va='bottom', zorder=5)
+                    fontsize=28, weight='bold', ha='center', va='bottom', zorder=5)
             
             ax.set_aspect('equal')
             ax.axis('off')
@@ -259,7 +259,7 @@ class Clusterer:
             
             # ⚡ FIJADO MATEMÁTICO: Anclamos el texto exactamente en la misma coordenada
             ax_err.text(0.5, 1.05, r"$\mathrm{Desajuste}$", transform=ax_err.transAxes, 
-                        fontsize=10, weight='bold', ha='center', va='bottom', zorder=5)
+                        fontsize=28, weight='bold', ha='center', va='bottom', zorder=5)
             
             ax_err.set_aspect('equal')
             ax_err.axis('off')
@@ -278,7 +278,7 @@ class Clusterer:
         grid_gt = gt_df.pivot(index='y (m)', columns='x (m)', values='Angle_Rad').values if gt_df is not None else np.full_like(grid_infer, np.nan)
             
         # ⚡ SOLUCIÓN GEOMÉTRICA BLINDADA: 5 columnas. Las posiciones 2 y 4 son exclusivas para las colorbars.
-        fig = plt.figure(figsize=(19.5/2.54, 5.5/2.54), facecolor=self.vis.facecolor)
+        fig = plt.figure(figsize=(19.5/1.41, 5.5/1.41), facecolor=self.vis.facecolor)
         gs = fig.add_gridspec(1, 5, width_ratios=[1, 1, 0.05, 1, 0.05], wspace=0.15, hspace=0.0)
         
         extent = [df_coords['x (m)'].min(), df_coords['x (m)'].max(), df_coords['y (m)'].min(), df_coords['y (m)'].max()]
@@ -287,7 +287,7 @@ class Clusterer:
         ax0 = fig.add_subplot(gs[0, 0])
         im0 = ax0.imshow(grid_gt, cmap='twilight_shifted', origin='lower', extent=extent, vmin=0, vmax=np.pi)
         self.vis._add_panel_letter(ax0, 'a', is_polar=False)
-        ax0.text(0.5, 1.05, r"$\mathrm{Original}$", transform=ax0.transAxes, fontsize=10, weight='bold', ha='center', va='bottom')
+        ax0.text(0.5, 1.05, r"$\mathrm{Original}$", transform=ax0.transAxes, fontsize=18, weight='bold', ha='center', va='bottom')
         ax0.set_aspect('equal')
         ax0.axis('off')
         
@@ -295,7 +295,7 @@ class Clusterer:
         ax1 = fig.add_subplot(gs[0, 1])
         im1 = ax1.imshow(grid_infer, cmap='twilight_shifted', origin='lower', extent=extent, vmin=0, vmax=np.pi)
         self.vis._add_panel_letter(ax1, 'b', is_polar=False)
-        ax1.text(0.5, 1.05, r"$\mathrm{Inferido}$", transform=ax1.transAxes, fontsize=10, weight='bold', ha='center', va='bottom')
+        ax1.text(0.5, 1.05, r"$\mathrm{Inferido}$", transform=ax1.transAxes, fontsize=18, weight='bold', ha='center', va='bottom')
         ax1.set_aspect('equal')
         ax1.axis('off')
         
@@ -304,7 +304,7 @@ class Clusterer:
         cbar1 = fig.colorbar(im1, cax=cbar_ax1, orientation='vertical')
         cbar1.set_ticks([0, np.pi/4, np.pi/2, 3*np.pi/4, np.pi])
         cbar1.ax.set_yticklabels([r'$0$', r'$\pi/4$', r'$\pi/2$', r'$3\pi/4$', r'$\pi$'])
-        cbar1.ax.tick_params(labelsize=8)
+        cbar1.ax.tick_params(labelsize=20)
 
         # Panel (c) Error
         ax2 = fig.add_subplot(gs[0, 3])
@@ -314,7 +314,7 @@ class Clusterer:
             im_err = ax2.imshow(error_map, cmap='inferno', origin='lower', extent=extent, vmin=0, vmax=np.pi/2)
             
             self.vis._add_panel_letter(ax2, 'c', is_polar=False)
-            ax2.text(0.5, 1.05, r"$\mathrm{Error\ Angular}$", transform=ax2.transAxes, fontsize=10, weight='bold', ha='center', va='bottom')
+            ax2.text(0.5, 1.05, r"$\mathrm{Error\ Angular}$", transform=ax2.transAxes, fontsize=28, weight='bold', ha='center', va='bottom')
             ax2.set_aspect('equal')
             ax2.axis('off')
             
@@ -323,11 +323,11 @@ class Clusterer:
             cbar_err = fig.colorbar(im_err, cax=cbar_ax2, orientation='vertical')
             cbar_err.set_ticks([0, np.pi/8, np.pi/4, 3*np.pi/8, np.pi/2])
             cbar_err.ax.set_yticklabels([r'$0$', r'$\pi/8$', r'$\pi/4$', r'$3\pi/8$', r'$\pi/2$'])
-            cbar_err.ax.tick_params(labelsize=8)
+            cbar_err.ax.tick_params(labelsize=14)
         else:
-            ax2.text(0.5, 0.5, 'GT no disponible', ha='center', va='center', fontsize=10)
+            ax2.text(0.5, 0.5, 'GT no disponible', ha='center', va='center', fontsize=18)
             self.vis._add_panel_letter(ax2, 'c', is_polar=False)
-            ax2.text(0.5, 1.05, r"$\mathrm{Error\ Angular}$", transform=ax2.transAxes, fontsize=10, weight='bold', ha='center', va='bottom')
+            ax2.text(0.5, 1.05, r"$\mathrm{Error\ Angular}$", transform=ax2.transAxes, fontsize=28, weight='bold', ha='center', va='bottom')
             ax2.set_aspect('equal')
             ax2.axis('off')
             
@@ -447,16 +447,16 @@ class Clusterer:
         grid_gt = gt_df.pivot(index='y (m)', columns='x (m)', values='Angle_Rad').values
         
         # Ajustamos el ancho ligeramente (de 6.5 a 7.8) para dar cabida a la barra de color sin comprimir el disco
-        fig, ax = plt.subplots(figsize=(7.8/2.54, 6.5/2.54), facecolor=self.vis.facecolor)
+        fig, ax = plt.subplots(figsize=(7.8/1.41, 6.5/1.41), facecolor=self.vis.facecolor)
         extent = [df_coords['x (m)'].min(), df_coords['x (m)'].max(), df_coords['y (m)'].min(), df_coords['y (m)'].max()]
         
         im = ax.imshow(grid_gt, cmap='twilight_shifted', origin='lower', extent=extent, vmin=0, vmax=np.pi)
         
         # ⚡ NUEVO: Inyección de la barra de color con proporciones idénticas a las del mapa combinado
-        cbar = fig.colorbar(im, ax=ax, orientation='vertical', fraction=0.046, pad=0.04)
+        cbar = fig.colorbar(im, ax=ax, orientation='vertical', fraction=0.046, pad=0.04, label=r"$\text{u}$")
         cbar.set_ticks([0, np.pi/4, np.pi/2, 3*np.pi/4, np.pi])
         cbar.ax.set_yticklabels([r'$0$', r'$\pi/4$', r'$\pi/2$', r'$3\pi/4$', r'$\pi$'])
-        cbar.ax.tick_params(labelsize=8)
+        cbar.ax.tick_params(labelsize=20)
         
         ax.set_aspect('equal')
         ax.axis('off') # Mantiene el recuadro cartesiano y ticks ocultos para un acabado limpio
