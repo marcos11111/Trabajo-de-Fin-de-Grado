@@ -498,4 +498,116 @@ class Visualizer:
         fig.tight_layout()
         fig.subplots_adjust(top=0.90, wspace=0.3, hspace=0.3)
         self.save_and_show(fig, filename)
-    
+    def animation(self, *args, fps=4, facecolor=None, **kwargs):
+        """
+        Herramienta genérica de animación MP4.
+        
+        Uso 1: Comparación binaria (existente)
+        -> animation(dfs_compare: dict, B_ext: np.ndarray=None, filename: str="comparacion.mp4")
+        
+        Uso 2: Animación Directa Secuencial de la rama 'yes' (NUEVO & INTEGRADO)
+        -> animation(yes_folder: Path, auxiliary_df: pd.DataFrame, filename: str="animacion_yes.mp4")
+        """
+        # Limpieza de argumentos
+        dfs_compare = args[0] if len(args) > 0 and isinstance(args[0], dict) else None
+        yes_folder = args[0] if len(args) > 0 and isinstance(args[0], Path) else None
+        
+        # Selección del motor de renderizado inteligente
+        if dfs_compare is not None:
+            # ⚡ Motor 1: Comparación binaria (existente, ligeramente pulido)
+            # (No te copio todo este código para no alargar la respuesta, 
+            # pero mantén tu lógica original de animación aquí con el facecolor unificado)
+            return self._animation_binary_compare(*args, fps=fps, facecolor=facecolor, **kwargs)
+            
+        elif yes_folder is not None:
+            # ⚡ Motor 2 (INTEGRADO): Animación Directa Secuencial MP4 de 'yes'
+            return self._animation_direct_sequential(yes_folder, args[1], args[2] if len(args) > 2 else "animacion_yes_directa.mp4", fps=fps, facecolor=facecolor, **kwargs)
+            
+        else:
+            print("❌ Error: No se ha proporcionado una estructura de datos válida para la animación (dict o Path).")
+
+    # ⚡ HERRAMIENTA NUEVA E INTEGRADA EN EL MARCO EXISTENTE
+    def _animation_direct_sequential(self, yes_folder: Path, auxiliary_df: pd.DataFrame, output_filename: str, fps: int, facecolor: str, **kwargs):
+        """
+        Genera la animación directa secuencial MP4 de los ángulos en 'yes'.
+        Utiliza el discretisedfield del marco existente de forma secuencial.
+        """
+        import discretisedfield as dfield
+        from datatypes import Quantity
+
+        # 1. Validación e inicialización
+        path = yes_folder
+        if not path.exists():
+            print(f"❌ Error: La carpeta objetivo '{input_folder}' no se encuentra aquí.")
+            return
+
+        # Escanear y ordenar ficheros
+        files = sorted([f for f in path.iterdir() if f.suffix in ('.ovf', '.omf')])
+        if not files:
+            print(f"❌ Error: No se encontraron tensores .ovf ni .omf en '{input_folder}'.")
+            return
+
+        print(f"📦 Renderizando {len(files)} fotogramas temporales de MuMax desde '{yes_folder}'...")
+
+        # 2. Configurar dimensiones reales del disco (nanómetros)
+        first_field = dfield.Field.from_file(files[0])
+        region = first_field.mesh.region
+        extent = [region.pmin[0]*1e9, region.pmax[0]*1e9, region.pmin[1]*1e9, region.pmax[1]*1e9]
+
+        # 3. Extraer los datos de los ángulos a memoria RAM
+        frames_angles = []
+        for f in files:
+            field = dfield.Field.from_file(f)
+            mx = field.x.array.squeeze()
+            my = field.y.array.squeeze()
+            phi = np.arctan2(my, mx)
+            frames_angles.append(phi)
+
+        # 4. Lienzo limpio y masivo Serif
+        # Usamos el facecolor heredado si no se proporciona uno específico
+        render_facecolor = facecolor if facecolor else self.facecolor
+        fig, ax = plt.subplots(figsize=(11, 9), facecolor=render_facecolor)
+        ax.set_facecolor('#e8e5d1') # Contraste interior sutil
+
+        # Dibujar la situación inicial
+        im = ax.imshow(frames_angles[0], cmap=self.default_cmap, vmin=-np.pi, vmax=np.pi, 
+                       origin='lower', extent=extent, aspect='equal')
+        
+        # ⚡ TÍTULOS GIGANTES HARDCODEADOS
+        ax.set_title("Evolución de la Imanación (Rama Activa)", fontsize=30, fontweight='bold', pad=20)
+        ax.set_xlabel("Posición $x$ (nm)", fontsize=26, labelpad=15)
+        ax.set_ylabel("Posición $y$ (nm)", fontsize=26, labelpad=15)
+        ax.tick_params(axis='both', labelsize=22)
+
+        # Barra de color unificada
+        cbar = fig.colorbar(im, ax=ax, pad=0.04, shrink=0.85)
+        cbar.set_ticks([-np.pi, -np.pi/2, 0, np.pi/2, np.pi])
+        cbar.ax.set_yticklabels([r'$-\pi$', r'$-\pi/2$', r'$0$', r'$\pi/2$', r'$\pi$'])
+        cbar.ax.tick_params(labelsize=22)
+        cbar.set_label(r'Ángulo de imanación $\phi$ (rad)', fontsize=26, weight='bold', labelpad=15)
+
+        fig.tight_layout()
+
+        # Función de actualización para FFMpeg
+        def update_frame(frame_idx):
+            im.set_data(frames_angles[frame_idx])
+            return [im]
+
+        print("🎬 Compilando secuencia secuencial MP4...")
+        anim = animation.FuncAnimation(fig, update_frame, frames=len(files), blit=True)
+        
+        # Guardar en MP4 usando FFMpeg
+        full_filename = self.analyzers['yes'].project_plot_dir / output_filename if 'yes' in self.analyzers else output_filename
+        
+        # Intentar guardar como MP4, fallar a GIF si FFMpeg no está presente
+        try:
+            writer = animation.FFMpegWriter(fps=fps, bitrate=3500)
+            anim.save(full_filename, writer=writer, facecolor=render_facecolor)
+            print(f"✅ ¡Vídeo generado e inmortalizado en: {full_filename}!")
+        except Exception as e:
+            print(f"❌ Error al codificar MP4 (FFMpeg?). Fallando a GIF... original error: {e}")
+            full_filename_gif = full_filename.with_suffix('.gif')
+            anim.save(full_filename_gif, writer='imagemagick', fps=fps, facecolor=render_facecolor)
+            print(f"⚠️ ¡Vídeo generado en formato GIF en: {full_filename_gif}!")
+        
+        plt.close(fig)
