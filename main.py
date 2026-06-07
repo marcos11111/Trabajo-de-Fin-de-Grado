@@ -14,14 +14,15 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
 CONFIG = {
     "aesthetics": {
         "use_scienceplots": True,
+        "facecolor": "#f3f0df",  # ⚡ NUEVO: Fondo crema unificado
         "font.family": "serif", 
-        "font.serif": ["DejaVu Serif"], 
-        "font.size": 10,
-        "axes.titlesize": 10, 
-        "axes.labelsize": 10, 
-        "xtick.labelsize": 8, 
-        "ytick.labelsize": 8,
-        "mathtext.fontset": "cm", 
+        "font.serif": ["Times New Roman", "DejaVu Serif"], 
+        "font.size": 18,         # ⚡ Tamaños de fuente escalados
+        "axes.titlesize": 20, 
+        "axes.labelsize": 18, 
+        "xtick.labelsize": 16, 
+        "ytick.labelsize": 16,
+        "mathtext.fontset": "stix", 
         "figure.dpi": 300, 
         "savefig.format": "pdf"
     },
@@ -34,7 +35,7 @@ CONFIG = {
     },
     "workflow": {
         "sample_prefix": "v4",
-        "seeds": [71,72,73,74],
+        "seeds": [55],
         "b_step": 100.0e-3,
         "skip_sims": True,
         "animations": True
@@ -52,7 +53,8 @@ if __name__ == '__main__':
         base_output_dir=local_data_root / "v3_analisis",
         material=CONFIG["material"], simulator=simulator,
         cluster_cfg=ClusterConfig(n_clusters=CONFIG["ml"]["n_clusters"], plot=True),
-        use_scienceplots=CONFIG["aesthetics"].get("use_scienceplots", False), # ⚡ NUEVO
+        use_scienceplots=CONFIG["aesthetics"].get("use_scienceplots", False),
+        facecolor=CONFIG["aesthetics"].get("facecolor", "#f3f0df"), # ⚡ NUEVO
         **CONFIG["ml"], **CONFIG["grid"]   
     )
     

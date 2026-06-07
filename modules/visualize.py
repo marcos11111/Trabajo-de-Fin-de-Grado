@@ -55,7 +55,7 @@ class Visualizer:
     def apply_paper_style(self, ax: plt.Axes, xlabel: str = "", ylabel: str = ""):
         """Estilo cartesiano riguroso: sin título interior, marcas hacia adentro."""
         if not self.use_scienceplots:
-            ax.set_facecolor('white')
+            ax.set_facecolor(self.facecolor)
             
         # ⚡ SOLUCIÓN DE SOLAPAMIENTO: Añadimos 'labelpad' para empujar los títulos
         # hacia afuera y evitar que LaTeX pise los números del eje.
@@ -140,7 +140,7 @@ class Visualizer:
             fig.legend(
                 handles=legend_lines, labels=[r'Inferencia original ($\hat \theta$)', r'Inferencia corregida ($\tilde \theta$)'],
                 loc='lower center', bbox_to_anchor=(0.5, 0.02), ncol=2, fontsize=9,
-                frameon=True, facecolor='white', edgecolor='#cccccc', fancybox=False
+                frameon=True, facecolor=self.facecolor, edgecolor='#cccccc', fancybox=False
             )
             
         # ⚡ CRÍTICO: Eliminamos fig.tight_layout() para que no destruya la maquetación polar
@@ -249,7 +249,7 @@ class Visualizer:
         
         self.apply_paper_style(ax_res, xlabel=r"Campo Externo $\mathbf{H}^\text{ext}$ (T)", ylabel=r"$\Delta m_x$")
         
-        ax_res.text(0.97, 0.05, f"NRMSE: {nrmse:.1e}", transform=ax_res.transAxes, ha='right', va='bottom', fontsize=8, family='monospace', bbox=dict(facecolor='white', edgecolor='none', alpha=0.8, pad=0))
+        ax_res.text(0.97, 0.05, f"NRMSE: {nrmse:.1e}", transform=ax_res.transAxes, ha='right', va='bottom', fontsize=8, family='monospace', bbox=dict(facecolor=self.facecolor, edgecolor='none', alpha=0.8, pad=0))
         
         max_res = np.max(np.abs(residual)) * 1.5 if np.max(np.abs(residual)) > 0 else 0.01
         ax_res.set_ylim(-max_res, max_res)
@@ -282,7 +282,7 @@ class Visualizer:
         
         # ⚡ AUMENTADO: Lienzo mucho más grande para el renderizado del vídeo MP4
         fig, ax = plt.subplots(figsize=(12/2.54, 10/2.54), facecolor=self.facecolor)
-        ax.set_facecolor('white')
+        ax.set_facecolor(self.facecolor)
         
         extent = [df['x (m)'].min(), df['x (m)'].max(), df['y (m)'].min(), df['y (m)'].max()]
         im = ax.imshow(initial_frame, cmap=cmap, vmin=vmin, vmax=vmax, origin='lower', extent=extent, aspect='equal')
@@ -340,7 +340,7 @@ class Visualizer:
         n_rows = len(dfs)
         n_cols = num_frames
         
-        fig, axes = plt.subplots(n_rows, n_cols, figsize=(17.5/2.54, (4.5 * n_rows + 1.5)/2.54), facecolor='#ffffff')
+        fig, axes = plt.subplots(n_rows, n_cols, figsize=(17.5/2.54, (4.5 * n_rows + 1.5)/2.54), facecolor=self.facecolor)
         if n_rows == 1: axes = [axes]
         
         extent = [first_df['x (m)'].min(), first_df['x (m)'].max(), first_df['y (m)'].min(), first_df['y (m)'].max()]
@@ -416,7 +416,7 @@ class Visualizer:
         b_val = b_ext[zero_idx]
         
         # Preparamos un lienzo de doble columna cuadrada
-        fig, axes = plt.subplots(2, 2, figsize=(16/2.54, 15/2.54), facecolor='#ffffff')
+        fig, axes = plt.subplots(2, 2, figsize=(16/2.54, 15/2.54), facecolor=self.facecolor)
         axes = axes.flatten()
         
         labels_letters = list(string.ascii_lowercase)
@@ -460,7 +460,7 @@ class Visualizer:
                 cbar_ticks = None
                 cbar_labels = None
                 
-            cmap.set_bad(color='white', alpha=0.0)
+            cmap.set_bad(color=self.facecolor, alpha=0.0)
             im = ax.imshow(grid_data, cmap=cmap, vmin=vmin, vmax=vmax, origin='lower', extent=extent)
             
             self._add_panel_letter(ax, labels_letters[idx], is_polar=False)

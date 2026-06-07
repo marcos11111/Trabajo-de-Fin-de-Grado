@@ -46,6 +46,7 @@ class MumaxProject:
         self.global_data: dict[Quantity, pd.DataFrame] = {}
         self.global_gt_df: pd.DataFrame | None = None
         self.has_gt = False
+        self.facecolor = kwargs.get('facecolor', '#ffffff')
         self.use_scienceplots = kwargs.get('use_scienceplots', False) # ⚡ NUEVO
 
         self._setup_logging()
@@ -147,7 +148,8 @@ class MumaxProject:
             read_path = self.base_folder / branch_name
             self.analyzers[branch_name] = BranchAnalyzer(
                 read_path, self.project_data_dir, self.project_plot_dir, 
-                use_scienceplots=self.use_scienceplots # ⚡ PASAMOS EL ARGUMENTO
+                use_scienceplots=self.use_scienceplots,
+                facecolor=self.facecolor # ⚡ Pásalo al BranchAnalyzer
             )
         return self.analyzers[branch_name]
 
@@ -299,7 +301,7 @@ class BatchProcessor:
     """Orquestador maestro de la ejecución por lotes."""
     
     def __init__(self, parent_folder: Path, base_output_dir: Path, verification_parent_folder: Path,
-                 material: MaterialProps, simulator: RemoteSimulator, cluster_cfg: ClusterConfig, **kwargs):
+                 material: MaterialProps, simulator: RemoteSimulator, cluster_cfg: ClusterConfig, facecolor: str = '#ffffff',**kwargs):
         self.parent_folder = Path(parent_folder)
         self.base_output_dir = Path(base_output_dir)
         self.verification_parent_folder = Path(verification_parent_folder)
@@ -314,8 +316,7 @@ class BatchProcessor:
         self.b_max = kwargs.get("b_max", 500.0e-3)
         self.animations = kwargs.get("animations", False)
         self.use_scienceplots = kwargs.get("use_scienceplots", False) # ⚡ NUEVO
-
-    # Y en run_analysis_pass (línea ~205):
+        self.facecolor = facecolor
                 
 
     def _get_mumax_parameters(self, bstep: float, **extra_variables) -> dict:
@@ -342,7 +343,8 @@ class BatchProcessor:
                 project = MumaxProject(
                     base_folder=subfolder, out_folder=out_folder, 
                     animations=self.animations, cluster_cfg=current_cfg,
-                    use_scienceplots=self.use_scienceplots # ⚡ PASAMOS EL ARGUMENTO
+                    use_scienceplots=self.use_scienceplots,
+                    facecolor=self.facecolor # ⚡ Pásalo al proyecto
                 )
                 project.start_step, project.end_step = 0.0, 1.0
                 

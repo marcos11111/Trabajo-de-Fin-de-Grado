@@ -174,7 +174,7 @@ class Clusterer:
         n_cols = len(vis_maps) + (1 if has_gt and self.ground_truth_clusters is not None else 0)
 
         # Dimensiones fijas para evitar el auto-scaling destructivo de Matplotlib
-        fig = plt.figure(figsize=((6.5 * n_cols)/2.54, 6.5/2.54), facecolor='#ffffff')
+        fig = plt.figure(figsize=((6.5 * n_cols)/2.54, 6.5/2.54), facecolor=self.vis.facecolor)
         
         # Estructuramos la rejilla de subplots de forma explícita
         gs = fig.add_gridspec(1, n_cols, wspace=0.15, hspace=0.0)
@@ -188,7 +188,7 @@ class Clusterer:
 
         for i, (name, labels) in enumerate(vis_maps.items()):
             ax = fig.add_subplot(gs[0, i])
-            ax.set_facecolor('#ffffff')
+            ax.set_facecolor(self.vis.facecolor)
 
             grid_labels = df.assign(L=labels).pivot(index='y (m)', columns='x (m)', values='L').values
             mapped_grid = np.where(grid_labels == self.LABEL_EMPTY, np.nan, grid_labels)
@@ -225,7 +225,7 @@ class Clusterer:
 
         if has_gt and self.ground_truth_clusters is not None:
             ax_err = fig.add_subplot(gs[0, n_cols - 1])
-            ax_err.set_facecolor('#ffffff')
+            ax_err.set_facecolor(self.vis.facecolor)
 
             grid_labels = df.assign(L=labels).pivot(index='y (m)', columns='x (m)', values='L').values
             grid_gt = self.ground_truth_clusters.pivot(index='y (m)', columns='x (m)', values='Cluster').values
@@ -278,7 +278,7 @@ class Clusterer:
         grid_gt = gt_df.pivot(index='y (m)', columns='x (m)', values='Angle_Rad').values if gt_df is not None else np.full_like(grid_infer, np.nan)
             
         # ⚡ SOLUCIÓN GEOMÉTRICA BLINDADA: 5 columnas. Las posiciones 2 y 4 son exclusivas para las colorbars.
-        fig = plt.figure(figsize=(19.5/2.54, 5.5/2.54), facecolor='#ffffff')
+        fig = plt.figure(figsize=(19.5/2.54, 5.5/2.54), facecolor=self.vis.facecolor)
         gs = fig.add_gridspec(1, 5, width_ratios=[1, 1, 0.05, 1, 0.05], wspace=0.15, hspace=0.0)
         
         extent = [df_coords['x (m)'].min(), df_coords['x (m)'].max(), df_coords['y (m)'].min(), df_coords['y (m)'].max()]
@@ -447,7 +447,7 @@ class Clusterer:
         grid_gt = gt_df.pivot(index='y (m)', columns='x (m)', values='Angle_Rad').values
         
         # Ajustamos el ancho ligeramente (de 6.5 a 7.8) para dar cabida a la barra de color sin comprimir el disco
-        fig, ax = plt.subplots(figsize=(7.8/2.54, 6.5/2.54), facecolor='#ffffff')
+        fig, ax = plt.subplots(figsize=(7.8/2.54, 6.5/2.54), facecolor=self.vis.facecolor)
         extent = [df_coords['x (m)'].min(), df_coords['x (m)'].max(), df_coords['y (m)'].min(), df_coords['y (m)'].max()]
         
         im = ax.imshow(grid_gt, cmap='twilight_shifted', origin='lower', extent=extent, vmin=0, vmax=np.pi)
