@@ -22,9 +22,9 @@ logger = logging.getLogger(__name__)
 class BranchAnalyzer:
     def __init__(self, in_folder: Path, project_data_dir: Path, project_plot_dir: Path,
                  anis_path: str = "anisU000000.ovf", max_sample_size: int = 10000, 
-                 facecolor: str = '#ffffff', use_scienceplots: bool = False): # ⚡ NUEVO ARGUMENTO
+                 facecolor: str = '#ffffff', use_scienceplots: bool = False):
         self.data = DataCore(in_folder, project_data_dir, project_plot_dir, anis_path)
-        self.vis = Visualizer(self.data, facecolor=facecolor, use_scienceplots=use_scienceplots) # ⚡ PASAMOS EL ARGUMENTO
+        self.vis = Visualizer(self.data, facecolor=facecolor, use_scienceplots=use_scienceplots)
         self.ml = Clusterer(self.data, self.vis, self.data.data_dir, 
                             self.data.in_folder / self.data.anis_path, max_sample_size)
 
@@ -47,7 +47,7 @@ class MumaxProject:
         self.global_gt_df: pd.DataFrame | None = None
         self.has_gt = False
         self.facecolor = kwargs.get('facecolor', '#ffffff')
-        self.use_scienceplots = kwargs.get('use_scienceplots', False) # ⚡ NUEVO
+        self.use_scienceplots = kwargs.get('use_scienceplots', False)
 
         self._setup_logging()
         if kwargs.get('auto_prepare', True):
@@ -149,7 +149,7 @@ class MumaxProject:
             self.analyzers[branch_name] = BranchAnalyzer(
                 read_path, self.project_data_dir, self.project_plot_dir, 
                 use_scienceplots=self.use_scienceplots,
-                facecolor=self.facecolor # ⚡ Pásalo al BranchAnalyzer
+                facecolor=self.facecolor
             )
         return self.analyzers[branch_name]
 
@@ -210,7 +210,6 @@ class MumaxProject:
             _, b_ext, df_coords, table_path = self._get_physics_context()
             inferred = host_analyzer.ml.infer_anisotropy_multiregion(df_coords, winning, h_data_plot, b_ext, material)
             
-            # ⚡ FIX: Usamos "filename=" explícitamente para evitar archivos ocultos
             host_analyzer.ml.plot_combined_anisotropy_maps(
                 df_coords, winning, inferred, gt_df=self.global_gt_df, filename="combined_anisotropy_map.pdf"
             )
@@ -237,65 +236,72 @@ class MumaxProject:
                 table_path, verification_table_path, filename="hysteresis_global_compare.pdf"
             )
             
-            # ⚡ INYECTAMOS LAS GRÁFICAS INDIVIDUALES Y PURAS
             if self.global_gt_df is not None:
                 host_analyzer.ml.plot_original_anisotropy_map(df_coords, self.global_gt_df, filename="original_anisotropy_map.pdf")
                 
             host_analyzer.vis.plot_original_hysteresis_clean(table_path, filename="hysteresis_original_clean.pdf")
             
-            try:
-                analyzer_yes = self.get_analyzer("yes")
-                analyzer_no = self.get_analyzer("no")
-                analyzer_diff = self.get_analyzer("diff_angles")
+            if getattr(self, 'animations', False):
+                logger.info(f"🎬 [ANIMACIÓN] Detectado flag activo. Compilando vídeos para {self.base_folder.name}...")
                 
-                # Forzamos la carga en RAM de las magnitudes espaciales
-                analyzer_yes.data.load_data([Quantity.ANGLE])
-                analyzer_no.data.load_data([Quantity.ANGLE])
-                analyzer_diff.data.load_data([Quantity.ANGLE])
-                
-                # Construimos el diccionario ordenado para el grid
-                dfs_comp = {
-                    r"$\mathbf{m}_\text{no}$": analyzer_no.data.get_df(Quantity.ANGLE),
-                    r"$\mathbf{m}$": analyzer_yes.data.get_df(Quantity.ANGLE),
-                    r"$\mathbf{m}_\text{dif}$": analyzer_diff.data.get_df(Quantity.ANGLE)
-                }
-                
-                # ⚡ FIX: Inyectamos explícitamente el campo magnético recuperado de la tabla OMF
-                host_analyzer.vis.plot_magnetization_comparison(
-                    dfs_comp, 
-                    b_ext=b_ext, 
-                    filename="magnetization_frames_compare.pdf", 
-                    num_frames=4
-                )
-            except Exception as e:
-                logger.warning(f"No se pudo generar el grid comparativo de magnetización: {e}")
-            
-            try:
-                # hybrid_dfs contiene los dataframes exactos y ordenados de la configuración de entrada
-                host_analyzer.vis.plot_clustering_features_grid(
-                    dfs=hybrid_dfs, 
-                    b_ext=b_ext, 
-                    filename="clustering_features_B0.pdf"
-                )
-            except Exception as e:
-                logger.warning(f"No se pudo generar el grid de variables de clustering: {e}")
+                # 1. Animación Directa Secuencial MP4 (o GIF) de la rama 'yes'
+                try:
+                    analyzer_yes = self.get_analyzer("yes")
+                    analyzer_yes.data.load_data([Quantity.ANGLE])
+                    
+                    # Forzamos que el visualizador de la rama "yes" dibuje la animación
+                    analyzer_yes.vis.animation(
+                        target=analyzer_yes.data.in_folder,
+                        aux_df=analyzer_yes.data.get_df(Quantity.ANGLE),
+                        filename="animacion_yes_directa.mp4",
+                        fps=4
+                    )
+                except Exception as e:
+                    logger.warning(f"⚠️ Omitiendo animación directa secuencial para 'yes': {e}")
+
+                # 2. Animaciones estándar basadas en magnitudes (Ángulo y Velocidad)
+                for branch_name in ["yes", "no"]:
+                    try:
+                        analyzer = self.get_analyzer(branch_name)
+                        analyzer.data.load_data([Quantity.ANGLE, Quantity.D_ANGLE])
+                        
+                        analyzer.vis.animation(quantity=str(Quantity.ANGLE), fps=2)
+                        analyzer.vis.animation(quantity=str(Quantity.D_ANGLE), fps=2)
+                    except Exception as e:
+                        logger.warning(f"⚠️ Omitiendo animaciones estándar para la rama '{branch_name}': {e}")
+            # =========================================================================
             
             # -------------------------------------------------------------
             host_analyzer.ml.export_inferred_to_ovf(df_coords, winning, inferred, "inferred_anisotropy.ovf")
             
-        # Generación de vídeos MP4 (Ángulo y Velocidad)
+        # ⚡ Generación de vídeos MP4 
         if getattr(self, 'animations', False):
             logger.info(f"Generando animaciones MP4 (Ángulo y Velocidad) para las ramas de {self.base_folder.name}...")
+            
+            # 1. ⚡ NUEVA INTEGRACIÓN: Animación Directa Secuencial MP4 de 'yes'
+            try:
+                analyzer_yes = self.get_analyzer("yes")
+                analyzer_yes.data.load_data([Quantity.ANGLE])
+                analyzer_yes.vis.animation(
+                    analyzer_yes.data.in_folder,              # Path a la carpeta 'yes'
+                    analyzer_yes.data.get_df(Quantity.ANGLE), # DataFrame auxiliar para la geometría
+                    "animacion_yes_directa.mp4",              # Filename
+                    fps=4                                     # FPS para el vídeo secuencial
+                )
+            except Exception as e:
+                logger.warning(f"Omitiendo animación directa secuencial para la rama 'yes': {e}")
+
+            # 2. Animaciones estándar de comparación (Ángulo y Velocidad)
             for branch_name in ["yes", "no"]:
                 try:
                     analyzer = self.get_analyzer(branch_name)
                     analyzer.data.load_data([Quantity.ANGLE, Quantity.D_ANGLE])
                     
-                    # ⚡ REDUCIMOS VELOCIDAD a fps=2 para un análisis visual sosegado
                     analyzer.vis.animation(quantity=str(Quantity.ANGLE), fps=2)
                     analyzer.vis.animation(quantity=str(Quantity.D_ANGLE), fps=2)
                 except Exception as e:
-                    logger.warning(f"Omitiendo animaciones para la rama '{branch_name}': {e}")
+                    logger.warning(f"Omitiendo animaciones estándar para la rama '{branch_name}': {e}")
+
 
 class BatchProcessor:
     """Orquestador maestro de la ejecución por lotes."""
@@ -315,7 +321,7 @@ class BatchProcessor:
         self.n_grid = kwargs.get("n_grid", 128)
         self.b_max = kwargs.get("b_max", 500.0e-3)
         self.animations = kwargs.get("animations", False)
-        self.use_scienceplots = kwargs.get("use_scienceplots", False) # ⚡ NUEVO
+        self.use_scienceplots = kwargs.get("use_scienceplots", False)
         self.facecolor = facecolor
                 
 
@@ -344,7 +350,7 @@ class BatchProcessor:
                     base_folder=subfolder, out_folder=out_folder, 
                     animations=self.animations, cluster_cfg=current_cfg,
                     use_scienceplots=self.use_scienceplots,
-                    facecolor=self.facecolor # ⚡ Pásalo al proyecto
+                    facecolor=self.facecolor
                 )
                 project.start_step, project.end_step = 0.0, 1.0
                 
